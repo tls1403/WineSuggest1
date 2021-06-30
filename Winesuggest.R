@@ -27,4 +27,58 @@ boxplot(df[,-1], ylim = c(0,30), cex.axis = 0.5)  #y 를 0부터 30까지 조정
 df.train <- df[,-1] #첫번째 변수를 제외한 데이터를 df.train 에 넣어줌
 df.train.scale <- scale(df.train)
 
+#euclidean distance (유사도 거리 측정)
 
+df.dist <- dist(df.train.scale,method = "euclidean") %>% as.matrix()
+View(df.dist)
+
+
+#k-means(군집)
+
+#군집개수 설정
+
+#elbow method
+library(factoextra)
+
+set.seed(12345)#난수 고정
+fviz_nbclust(df.train.scale,kmeans,method = "wss",k.max = 15)+ #wss within some of square, x축의 군집개수가 15개 까지
+  theme_minimal()+ #테마
+  ggtitle("the Elbow Method") #제목
+
+#silhouette method
+fviz_nbclust(df.train.scale,kmeans,method = "silhouette",k.max = 15)+
+  theme_minimal()+
+  ggtitle("Silhouette Plot")
+
+#k =3 으로 정해짐
+
+df.kmeans <- kmeans(df.train.scale, centers = 3, iter.max = 1000) # k = 3 , iter.max = 최대 돌리는 횟수
+
+install.packages("useful")
+library(useful)
+plot(df.kmeans,df.train.scale) #2차원 그래프로 군집별 데이터 확인
+
+#군집별 평균 시각화
+df.kmeans$centers #각 군집별 평균값 확인
+barplot(t(df.kmeans$centers),beside = T,col = 2:14) #beside= T : 막대기를 옆으로 세워줌, 색깔은 2번부터 14번
+legend("topleft",colnames(df.train.scale),fill = 2:14, cex = 0.5,bty = "n")
+
+
+#raw data에 cluster 붙힘
+df$kmeans_cluster <- df.kmeans$cluster#변수만들어서 넣어줌
+head(df,3)
+
+# k medoids clustering
+set.seed(2021)
+fviz_nbclust(df.train.scale, pam ,method = "wss",k.max = 15)+
+  theme_minimal()+
+  ggtitle("the Elbow method")
+
+#군집화
+library(cluster)
+df.kmedoids <- pam(df.train.scale,k =3) #elbow method 에서 k = 3 이나왔다.
+plot(df.kmedoids)
+
+#raw data에 k medoid cluster 변수추가
+df$kmedoids_cluster <- df.kmedoids$clustering
+head(df,3)  
