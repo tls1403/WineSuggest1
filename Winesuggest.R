@@ -82,3 +82,60 @@ plot(df.kmedoids)
 #raw data에 k medoid cluster 변수추가
 df$kmedoids_cluster <- df.kmedoids$clustering
 head(df,3)  
+
+#hierarchical Clustering
+library(factoextra)
+
+#군집 개수 설정
+fviz_nbclust(df.train.scale,hcut,method = 'wss',k.max = 15)+ #hcut =hierarchical Clustering
+  theme_minimal()+
+  ggtitle("the Elbow Method")
+
+fviz_nbclust(df.train.scale,hcut,method = "silhouette",k.max = 15)+ 
+  theme_minimal()+
+  ggtitle("Silhouette Plot")
+
+#hierarchical clustering 은 군집개수를 설정하고 들어가는게 아니라, 가까운 데이터끼리 다 묶은 뒤 군집을 나눠준다.
+
+#군집
+#군집 구성 방식별 군집화 진행
+df.hclust.single <- hclust(dist(df.train.scale),method = 'single')
+df.hclust.cplit <- hclust(dist(df.train.scale),method = 'complete')
+df.hclust.avg <- hclust(dist(df.train.scale),method = 'average')
+df.hclust.ward <- hclust(dist(df.train.scale),method = 'ward.D')
+
+
+#시각화 -> 군집 구성 방식 선택
+par(mfrow=c(2,2))
+plot(df.hclust.single, hang = -1, cex =0.4) #hang = -1 은 덴드로그램이 가장 밑단에서 시작되게
+rect.hclust(df.hclust.single,k =3 ,border = 'skyblue') #rect.hclust 는 덴드로그램 위에 시각적으로 군집을 나눠줌
+plot(df.hclust.cplit,hang = -1, cex =0.4)
+rect.hclust(df.hclust.cplit,k=3,border = 'skyblue')
+plot(df.hclust.avg,hang =-1,cex= 0.4)
+rect.hclust(df.hclust.avg, k =3, border = 'skyblue')
+plot(df.hclust.ward,hang = -1,cex = 0.4)
+rect.hclust(df.hclust.ward,k=3,border = 'skyblue')
+
+#군집화 및 군집할당
+
+hclust_cluster <- cutree(df.hclust.ward,k =3) #cutree로 군집을 해서 cluster number을 뽑을수있다.
+df$hclust_cluster <- hclust_cluster
+
+
+head(df,3)
+
+#분석 결과물
+
+
+
+#df.dist = 유사도행렬
+
+#-> 유사한 성격의 와인을 찾는데 사용
+
+
+
+#df$kmeans_cluster,df$kmedoids_cluster,df$hclust_cluster = 군집데이터
+
+#->다른 성격의 와인 그룹을 찾는데 활용
+
+
